@@ -167,22 +167,21 @@ RCT_EXPORT_METHOD(
     if (useWebKit) {
         if (@available(iOS 11.0, *)) {
             dispatch_async(dispatch_get_main_queue(), ^(){
-                WKHTTPCookieStore *cookieStore = [[WKWebsiteDataStore defaultDataStore] httpCookieStore];
+                // https://stackoverflow.com/questions/46465070/how-to-delete-cookies-from-wkhttpcookiestore#answer-47928399
                 [cookieStore getAllCookies:^(NSArray<NSHTTPCookie *> *allCookies) {
+                NSSet *websiteDataTypes = [NSSet setWithArray:@[WKWebsiteDataTypeCookies]];
                     for(NSHTTPCookie *currentCookie in allCookies) {
+                NSDate *dateFrom = [NSDate dateWithTimeIntervalSince1970:0];
                         // Uses the NSHTTPCookie directly has no effect, nor deleted the cookie nor thrown an error.
+                [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:websiteDataTypes
                         // Create a new cookie with the given values and delete this one do the work.
+                                                        modifiedSince:dateFrom
                         NSMutableDictionary<NSHTTPCookiePropertyKey, id> *cookieData =  [NSMutableDictionary dictionary];
+                                                        completionHandler:^() {
                         [cookieData setValue:currentCookie.name forKey:NSHTTPCookieName];
+                                                            resolve(nil);
                         [cookieData setValue:currentCookie.value forKey:NSHTTPCookieValue];
-                        [cookieData setValue:currentCookie.domain forKey:NSHTTPCookieDomain];
-                        [cookieData setValue:currentCookie.path forKey:NSHTTPCookiePath];
-
-                        NSHTTPCookie *newCookie = [NSHTTPCookie cookieWithProperties:cookieData];
-                        [cookieStore deleteCookie:newCookie completionHandler:^{}];
-                    }
-                    resolve(nil);
-                }];
+                                                        }];
             });
         } else {
             reject(@"", NOT_AVAILABLE_ERROR_MESSAGE, nil);
