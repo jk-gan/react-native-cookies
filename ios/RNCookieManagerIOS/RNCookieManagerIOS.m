@@ -220,11 +220,6 @@ RCT_EXPORT_METHOD(
         [cookieList setObject:[self createCookieData:cookie] forKey:cookie.name];
     }
 
-
-    if (cookie.expiresDate) {
-        [cookieData setObject:[self.formatter stringFromDate:cookie.expiresDate] forKey:@"expiresDate"];
-    }
-
     return cookieList;
 }
 
@@ -235,6 +230,12 @@ RCT_EXPORT_METHOD(
     [cookieData setObject:cookie.name forKey:@"name"];
     [cookieData setObject:cookie.domain forKey:@"domain"];
     [cookieData setObject:cookie.path forKey:@"path"];
+
+
+    if (cookie.expiresDate) {
+        [cookieData setObject:[self.formatter stringFromDate:cookie.expiresDate] forKey:@"expiresDate"];
+    }
+
     return cookieData;
 }
 
